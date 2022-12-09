@@ -1,0 +1,54 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cmake",
+            "label": "Detailed build",
+            "command": "build",
+            "targets": [
+                "all"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "CMake template build task",
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "run-errors"
+            }
+        },
+        {
+            "label": "Error summary",
+            "type": "valgrind",
+            "target": "${command:cmake.launchTargetPath}",
+            "valgrind": {
+                "args": [
+                    "--tool=memcheck",
+                    "--leak-check=yes",
+                    "--show-reachable=yes",
+                    "--num-callers=20",
+                    "--track-origins=yes",
+                    "-s",
+                    "-q"
+                ]
+            },
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "icon": {
+                "id": "gear"
+            },
+        }
+    ]
+}
