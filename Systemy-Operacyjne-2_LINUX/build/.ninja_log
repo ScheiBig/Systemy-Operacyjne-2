@@ -1,0 +1,6 @@
+# ninja log v5
+0	227	1670359864875116400	CMakeFiles/Systemy_Operacyjne_2_zadanie_1A.dir/util/linux_semaphore.cpp.o	3e779b4ecf656f85
+419	554	1670364446015116400	Systemy_Operacyjne_2_zadanie_1A	505798ec4225c50f
+0	419	1670364445875116400	CMakeFiles/Systemy_Operacyjne_2_zadanie_1A.dir/main1A.cpp.o	c3706a0b3904ebde
+0	126	1670343514165116400	Systemy_Operacyjne_2_zadanie_1B	b003db62bc85542a
+0	415	1670342516415116400	CMakeFiles/Systemy_Operacyjne_2_zadanie_1B.dir/main1B.cpp.o	83ebcefcfe42bd4f

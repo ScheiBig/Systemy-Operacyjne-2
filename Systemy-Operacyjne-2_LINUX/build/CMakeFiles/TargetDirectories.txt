@@ -1,0 +1,4 @@
+/home/scheibig/git/Systemy-Operacyjne-2_LINUX/build/CMakeFiles/rebuild_cache.dir
+/home/scheibig/git/Systemy-Operacyjne-2_LINUX/build/CMakeFiles/edit_cache.dir
+/home/scheibig/git/Systemy-Operacyjne-2_LINUX/build/CMakeFiles/Systemy_Operacyjne_2_zadanie_1B.dir
+/home/scheibig/git/Systemy-Operacyjne-2_LINUX/build/CMakeFiles/Systemy_Operacyjne_2_zadanie_1A.dir
