@@ -1,7 +1,7 @@
 /* ========================================================================== */
 /* Author: Marcin Jeznach || plz no steal 😭                                  */
 /*                                                                            */
-/* Semaphore primitive witch OS-independent interface                         */
+/* Semaphore primitive with OS-independent interface                         */
 /* ========================================================================== */
 #pragma once
 

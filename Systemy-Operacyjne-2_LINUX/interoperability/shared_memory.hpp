@@ -170,7 +170,7 @@ void i_op::shared_memory<T, _cr_new>::unmap()
 #endif
     this->__ptr == nullptr;
     this->__len = 0;
-}
+    }
 
 template<typename T, bool _cr_new>
 void i_op::shared_memory<T, _cr_new>::close()
@@ -190,7 +190,7 @@ void i_op::shared_memory<T, _cr_new>::close()
     this->__fl_dtr = -1;
 #endif
     this->__name == nullptr;
-}
+    }
 
 template<typename T, bool _cr_new>
 T* const i_op::shared_memory<T, _cr_new>::ptr() { return this->__ptr; }
