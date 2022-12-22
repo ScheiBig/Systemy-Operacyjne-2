@@ -47,7 +47,10 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "pthread.h": "c",
-        "map": "cpp"
+        "map": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }
