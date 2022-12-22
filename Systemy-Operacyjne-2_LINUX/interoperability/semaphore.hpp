@@ -105,12 +105,12 @@ namespace i_op
          * @param _value initial value of the semaphore
          */
         named_semaphore(char const* _name, unsigned int _value) noexcept(false);
-
+        
         /**
          * @brief Performs destruction of object, ignoring exceptions on failure
          */
         ~named_semaphore();
-
+        
         /**
          * @brief Performs destruction of object (specific to named semaphores), throwing on failure
          * @throw i_op::error_msg – contains OS-specific error code
@@ -149,7 +149,7 @@ void i_op::basic_semaphore::wait() noexcept(false)
     if (sem_wait(this->__sem_ptr) != 0)
     {
         throw i_op::error_msg{ errno };
-}
+    }
 #endif
 }
 
@@ -170,7 +170,7 @@ void i_op::basic_semaphore::wait(i_op::time_unit const& _duration) noexcept(fals
     if (sem_timedwait(this->__sem_ptr, &dur) != 0)
     {
         throw i_op::error_msg{ errno };
-}
+    }
 #endif
 }
 
@@ -197,7 +197,7 @@ bool i_op::basic_semaphore::try_wait() noexcept(false)
         {
             throw i_op::error_msg{ errno };
         }
-}
+    }
     return true;
 #endif
 }
@@ -214,7 +214,7 @@ void i_op::basic_semaphore::post() noexcept(false)
     if (sem_post(this->__sem_ptr) != 0)
     {
         throw i_op::error_msg{ errno };
-}
+    }
 #endif
 }
 
@@ -231,7 +231,7 @@ inline void i_op::basic_semaphore::close() noexcept(false)
     if (sem_close(this->__sem_ptr) != 0)
     {
         throw i_op::error_msg{ errno };
-}
+    }
     this->__sem_ptr = nullptr;
 #endif
 }
