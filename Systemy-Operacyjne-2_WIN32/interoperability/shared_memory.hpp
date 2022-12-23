@@ -96,12 +96,12 @@ i_op::shared_memory<T, _cr_new>::shared_memory(char const* _name, size_t _n_elem
     DWORD err{ GetLastError() };
     if (this->__fl_hdl == nullptr)
     {
-        throw i_op::error_msg{ err };
+        throw i_op::error_msg{ err, "i_op::shared_memory<T, bool>::shared_memory(char const*, size_t)", "CreateFileMappingA(HANDLE, LPSECURITY_ATTRIBUTES, DWORD, DWORD, DWORD, LPCSTR)" };
     }
     if (_cr_new && err == ERROR_ALREADY_EXISTS)
     {
         CloseHandle(this->__fl_hdl);
-        throw i_op::error_msg{ err };
+        throw i_op::error_msg{ err, "i_op::shared_memory<T, true>::shared_memory(char const*, size_t)", "CreateFileMappingA(HANDLE, LPSECURITY_ATTRIBUTES, DWORD, DWORD, DWORD, LPCSTR)" };
     }
 
 
@@ -109,12 +109,7 @@ i_op::shared_memory<T, _cr_new>::shared_memory(char const* _name, size_t _n_elem
     err = GetLastError();
     if (this->__ptr == nullptr)
     {
-        throw i_op::error_msg{ err };
-    }
-    if (_cr_new && err == ERROR_ALREADY_EXISTS)
-    {
-        CloseHandle(this->__fl_hdl);
-        throw i_op::error_msg{ err };
+        throw i_op::error_msg{ err, "i_op::shared_memory<T, bool>::shared_memory(char const*, size_t)", "MapViewOfFile(HANDLE, DWORD, DWORD, DWORD, SIZE_T)" };
     }
 #endif
 #ifdef OS_LINUX
@@ -123,14 +118,14 @@ i_op::shared_memory<T, _cr_new>::shared_memory(char const* _name, size_t _n_elem
     this->__fl_dtr = shm_open(_name, o_fl, 0664);
     if (this->__fl_dtr < 0)
     {
-        throw std::system_error(std::make_error_code((std::errc)errno), "shm_open");
+        throw i_op::error_msg{ errno, "i_op::shared_memory<T, bool>::shared_memory(char const*, size_t)", "shm_open(char const*, int, mode_t)" };
     }
     this->__name = _name;
 
     if (ftruncate(this->__fl_dtr, _n_elem * sizeof(T)) != 0)
     {
         shm_unlink(this->__name);
-        throw std::system_error(std::make_error_code((std::errc)errno), "shm_open");
+        throw i_op::error_msg{ errno, "i_op::shared_memory<T, bool>::shared_memory(char const*, size_t)", "ftruncate(int, size_t)" };
     }
     this->__len = _n_elem;
 
@@ -138,7 +133,7 @@ i_op::shared_memory<T, _cr_new>::shared_memory(char const* _name, size_t _n_elem
     if (this->__ptr == MAP_FAILED)
     {
         shm_unlink(this->__name);
-        throw std::system_error(std::make_error_code((std::errc)errno), "shm_open");
+        throw i_op::error_msg{ errno, "i_op::shared_memory<T, bool>::shared_memory(char const*, size_t)", "mmap(void*, size_t, int, int, int, off_t)" };
     }
 #endif
 }
@@ -159,13 +154,13 @@ void i_op::shared_memory<T, _cr_new>::unmap()
 #ifdef OS_WIN32
     if (!!UnmapViewOfFile(this->__ptr) == false)
     {
-        throw i_op::error_msg{ GetLastError() };
+        throw i_op::error_msg{ GetLastError(), "i_op::shared_memory<T, bool>::unmap()", "UnmapViewOfFile(LPCVOID)" };
     }
 #endif
 #ifdef OS_LINUX
     if (munmap(this->__ptr, this->__len) != 0)
     {
-        throw i_op::error_msg{ errno };
+        throw i_op::error_msg{ errno, "i_op::shared_memory<T, bool>::unmap()", "munmap(void*, size_t)" };
     }
 #endif
     this->__ptr == nullptr;
@@ -178,18 +173,42 @@ void i_op::shared_memory<T, _cr_new>::close()
 #ifdef OS_WIN32
     if (!!CloseHandle(this->__fl_hdl) == false)
     {
-        throw i_op::error_msg{ GetLastError() };
+        throw i_op::error_msg{ GetLastError(), "i_op::shared_memory<T, bool>::close()", "CloseHandle(HANDLE)" };
     }
     this->__fl_hdl == nullptr;
 #endif
 #ifdef OS_LINUX
+    int e[3]{ 0 };
+    if (munmap(this->__ptr, this->__len * sizeof(T)) != 0)
+    {
+        e[0] = errno;
+    }
     if (shm_unlink(this->__name) != 0)
     {
-        throw i_op::error_msg{ errno };
+        e[1] = errno;
+    }
+    if (::close(this->__fl_dtr) != 0)
+    {
+        e[2] = errno;
     }
     this->__fl_dtr = -1;
 #endif
-    this->__name == nullptr;
+    this->__name = nullptr;
+#ifdef OS_LINUX
+    const char* m = "i_op::shared_memory<T, bool>::close()";
+    if (e[0] != 0)
+    {
+        throw i_op::error_msg{ e[0], m, "munmap(void*, size_t)" };
+    }
+    if (e[1] != 0)
+    {
+        throw i_op::error_msg{ e[1], m, "shm_unlink(char const*)" };
+    }
+    if (e[2] != 0)
+    {
+        throw i_op::error_msg{ e[2], m, "close(int)" };
+    }
+#endif
 }
 
 template<typename T, bool _cr_new>

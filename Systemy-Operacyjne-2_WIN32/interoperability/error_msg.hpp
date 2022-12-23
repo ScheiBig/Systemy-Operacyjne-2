@@ -33,6 +33,16 @@ namespace i_op
 #endif
 
         /**
+         * @brief Description of source of error
+         */
+        char const* __err_src;
+
+        /**
+         * @brief Description of native source of error
+         */
+        char const* __err_dsc;
+
+        /**
          * @brief Prints detailed error message (based on error code, actual meaning may be more intricate)
          * 
          * @param _s Output stream to print to, also used as return reference
@@ -40,6 +50,7 @@ namespace i_op
          */
         friend std::ostream& operator <<(std::ostream& _s, error_msg const& _em)
         {
+            _s << "\u001b[91m" << _em.__err_src << "\u001b[0m" << " @ " << "\u001b[95m" << _em.__err_dsc << "\u001b[0m" << '\n';
 #ifdef OS_WIN32
             LPSTR msg_buf = nullptr;
 

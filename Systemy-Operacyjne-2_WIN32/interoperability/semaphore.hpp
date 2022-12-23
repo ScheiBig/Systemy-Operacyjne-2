@@ -1,7 +1,7 @@
 /* ========================================================================== */
 /* Author: Marcin Jeznach || plz no steal 😭                                  */
 /*                                                                            */
-/* Semaphore primitive with OS-independent interface                         */
+/* Semaphore primitive with OS-independent interface                          */
 /* ========================================================================== */
 #pragma once
 
@@ -37,25 +37,31 @@ namespace i_op
          * @brief Decrements the semaphore, waiting indefinitely if the current value is 0
          * @throw i_op::error_msg contains a OS-specific error code
          */
-        void wait() noexcept(false);
+        void acquire() noexcept(false);
         /**
          * @brief Decrements the semaphore, waiting no longer(ish) than `_duration` if the current value is 0
          * @param _duration Maximal(ish) waiting time. If duration points past /03:14:08 UTC, 2038.01.19/, behaviour may be undefined
          * @throw i_op::error_msg contains a OS-specific error code
          */
-        void wait(i_op::time_unit const& _duration) noexcept(false);
+        void acquire(i_op::time_unit const& _duration) noexcept(false);
         /**
          * @brief Decrements the semaphore, exiting immediately if the current value is 0
          * @return true if the decrement was successful
          * @throw i_op::error_msg – contains a OS-specific error code
          */
-        bool try_wait() noexcept(false);
+        bool try_acquire() noexcept(false);
+        /**
+         * @brief Decrements the semaphore, exiting no longer(ish) than after `_duration` if the current value is 0
+         * @return true if the decrement was successful
+         * @throw i_op::error_msg – contains a OS-specific error code
+         */
+        bool try_acquire(i_op::time_unit const& _duration) noexcept(false);
 
         /**
          * @brief Increments the semaphore
          * @throw i_op::error_msg – contains OS-specific error code
          */
-        void post() noexcept(false);
+        void release() noexcept(false);
 
         /**
          * @brief Performs destruction of object, throwing on failure
@@ -73,7 +79,7 @@ namespace i_op
 #ifdef OS_LINUX
         sem_t __sem_v;
 #endif
-        semaphore(const semaphore&) = delete;
+        semaphore(semaphore const&) = delete;
     public:
         /**
          * @brief Construct a new semaphore object
@@ -97,7 +103,7 @@ namespace i_op
     {
     private:
         char const* __name;
-        named_semaphore(const named_semaphore&) = delete;
+        named_semaphore(named_semaphore const&) = delete;
     public:
         /**
          * @brief Construct a new semaphore object
@@ -136,31 +142,29 @@ namespace i_op
 
 i_op::basic_semaphore::basic_semaphore() {}
 
-void i_op::basic_semaphore::wait() noexcept(false)
+void i_op::basic_semaphore::acquire() noexcept(false)
 {
 #ifdef OS_WIN32
-    int result{ (int)WaitForSingleObject(this->__sem_hdl, INFINITE) };
-    if (result != WAIT_OBJECT_0)
+    if (WaitForSingleObject(this->__sem_hdl, INFINITE) != WAIT_OBJECT_0)
     {
-        throw i_op::error_msg{ GetLastError() };
+        throw i_op::error_msg{ GetLastError(), "i_op::basic_semaphore::acquire()", "WaitForSingleObject(HANDLE, DWORD)" };
     }
 #endif
 #ifdef OS_LINUX
     if (sem_wait(this->__sem_ptr) != 0)
     {
-        throw i_op::error_msg{ errno };
-}
+        throw i_op::error_msg{ errno, "i_op::basic_semaphore::acquire()", "sem_wait(sem_t*)" };
+    }
 #endif
 }
 
-void i_op::basic_semaphore::wait(i_op::time_unit const& _duration) noexcept(false)
+void i_op::basic_semaphore::acquire(i_op::time_unit const& _duration) noexcept(false)
 {
 #ifdef OS_WIN32
     DWORD wait_time{ (DWORD)((((_duration.h * 60) + _duration.min) * 60 + _duration.s * 1000) + _duration.ms) };
-    int result{ (int)WaitForSingleObject(this->__sem_hdl, wait_time) };
-    if (result != WAIT_OBJECT_0)
+    if (WaitForSingleObject(this->__sem_hdl, wait_time) != WAIT_OBJECT_0)
     {
-        throw i_op::error_msg{ GetLastError() };
+        throw i_op::error_msg{ GetLastError(), "i_op::basic_semaphore::acquire(i_op::time_unit const&)", "WaitForSingleObject(HANDLE, DWORD)" };
     }
 #endif
 #ifdef OS_LINUX
@@ -169,20 +173,19 @@ void i_op::basic_semaphore::wait(i_op::time_unit const& _duration) noexcept(fals
     dur.tv_nsec = ((_duration.ms * 1000) + _duration.us) * 1000 + _duration.ns;
     if (sem_timedwait(this->__sem_ptr, &dur) != 0)
     {
-        throw i_op::error_msg{ errno };
-}
+        throw i_op::error_msg{ errno, "i_op::basic_semaphore::acquire(i_op::time_unit const&)", "sem_timedwait(sem_t*, struct timespec const*)" };
+    }
 #endif
 }
 
-bool i_op::basic_semaphore::try_wait() noexcept(false)
+bool i_op::basic_semaphore::try_acquire() noexcept(false)
 {
 #ifdef OS_WIN32
-    int result{ (int)WaitForSingleObject(this->__sem_hdl, 0) };
-    switch (result)
+    switch (WaitForSingleObject(this->__sem_hdl, 0))
     {
     case WAIT_OBJECT_0: return true;
     case WAIT_TIMEOUT: return false;
-    default: throw i_op::error_msg{ GetLastError() };
+    default: throw i_op::error_msg{ GetLastError(), "i_op::basic_semaphore::try_acquire()", "WaitForSingleObject(HANDLE, DWORD)" };
     }
 #endif
 #ifdef OS_LINUX
@@ -195,43 +198,74 @@ bool i_op::basic_semaphore::try_wait() noexcept(false)
         }
         else
         {
-            throw i_op::error_msg{ errno };
+            throw i_op::error_msg{ errno, "i_op::basic_semaphore::try_acquire()", "sem_trywait(sem_t*)" };
         }
-}
+    }
     return true;
 #endif
 }
 
-void i_op::basic_semaphore::post() noexcept(false)
+bool i_op::basic_semaphore::try_acquire(i_op::time_unit const& _duration) noexcept(false)
+{
+#ifdef OS_WIN32
+    DWORD wait_time{ (DWORD)((((_duration.h * 60) + _duration.min) * 60 + _duration.s * 1000) + _duration.ms) };
+    switch (WaitForSingleObject(this->__sem_hdl, wait_time))
+    {
+    case WAIT_OBJECT_0: return true;
+    case WAIT_TIMEOUT: return false;
+    default: throw i_op::error_msg{ GetLastError(), "i_op::basic_semaphore::try_acquire(i_op::time_unit const&)", "WaitForSingleObject(HANDLE, DWORD)" };
+    }
+#endif
+#ifdef OS_LINUX
+    timespec dur;
+    dur.tv_sec = ((_duration.h * 60) + _duration.min) * 60 + _duration.s + time(nullptr);
+    dur.tv_nsec = ((_duration.ms * 1000) + _duration.us) * 1000 + _duration.ns;
+    if (sem_timedwait(this->__sem_ptr, &dur) != 0)
+    {
+        int er{ errno };
+        if (er == ETIMEDOUT)
+        {
+            return false;
+        }
+        else
+        {
+            throw i_op::error_msg{ errno, "i_op::basic_semaphore::try_acquire(i_op::time_unit const&)", "sem_timedwait(sem_t*, struct timespec const*)" };
+        }
+    }
+    return true;
+#endif
+}
+
+void i_op::basic_semaphore::release() noexcept(false)
 {
 #ifdef OS_WIN32
     if (!!ReleaseSemaphore(this->__sem_hdl, 1, nullptr) == false)
     {
-        throw i_op::error_msg{ GetLastError() };
+        throw i_op::error_msg{ GetLastError(), "i_op::basic_semaphore::release()", "ReleaseSemaphore(HANDLE, LONG, LPLONG)" };
     }
 #endif
 #ifdef OS_LINUX
     if (sem_post(this->__sem_ptr) != 0)
     {
-        throw i_op::error_msg{ errno };
-}
+        throw i_op::error_msg{ errno, "i_op::basic_semaphore::release()", "sem_post(sem_t*)" };
+    }
 #endif
 }
 
-inline void i_op::basic_semaphore::close() noexcept(false)
+void i_op::basic_semaphore::close() noexcept(false)
 {
 #ifdef OS_WIN32
     if (!!CloseHandle(this->__sem_hdl) == false)
     {
-        throw i_op::error_msg{ GetLastError() };
+        throw i_op::error_msg{ GetLastError(), "i_op::basic_semaphore::close()", "CloseHandle(HANDLE)" };
     }
     this->__sem_hdl = nullptr;
 #endif
 #ifdef OS_LINUX
     if (sem_close(this->__sem_ptr) != 0)
     {
-        throw i_op::error_msg{ errno };
-}
+        throw i_op::error_msg{ errno, "i_op::basic_semaphore::close()", "sem_close(sem_t*)" };
+    }
     this->__sem_ptr = nullptr;
 #endif
 }
@@ -244,13 +278,13 @@ i_op::semaphore::semaphore(unsigned int _value) noexcept(false)
     this->__sem_hdl = CreateSemaphoreA(nullptr, _value, _value, nullptr);
     if (this->__sem_hdl == nullptr)
     {
-        throw i_op::error_msg{ GetLastError() };
+        throw i_op::error_msg{ GetLastError(), "i_op::semaphore::semaphore(unsigned int)", "CreateSemaphoreA(LPSECURITY_ATTRIBUTES, LONG, LONG, LPCSTR)" };
     }
 #endif
 #ifdef OS_LINUX
     if (sem_init(&this->__sem_v, (int)true, _value) != 0)
     {
-        throw i_op::error_msg{ errno };
+        throw i_op::error_msg{ errno, "i_op::semaphore::semaphore(unsigned int)", "sem_init(sem_t*, int, unsigned int)" };
     }
     this->__sem_ptr = &this->__sem_v;
 #endif
@@ -285,12 +319,12 @@ i_op::named_semaphore<_cr_new>::named_semaphore(char const* _name, unsigned int 
     DWORD err = GetLastError();
     if (this->__sem_hdl == nullptr)
     {
-        throw i_op::error_msg{ err };
+        throw i_op::error_msg{ err, "i_op::named_semaphore<bool>::named_semaphore(char const*, unsigned int)", "CreateSemaphoreA(LPSECURITY_ATTRIBUTES, LONG, LONG, LPCSTR)" };
     }
     if (_cr_new && err == ERROR_ALREADY_EXISTS)
     {
         CloseHandle(this->__sem_hdl);
-        throw i_op::error_msg{ err };
+        throw i_op::error_msg{ err, "i_op::named_semaphore<true>::named_semaphore(char const*, unsigned int)", "CreateSemaphoreA(LPSECURITY_ATTRIBUTES, LONG, LONG, LPCSTR)" };
     }
 #endif
 #ifdef OS_LINUX
@@ -299,7 +333,7 @@ i_op::named_semaphore<_cr_new>::named_semaphore(char const* _name, unsigned int 
     sem_t* result{ sem_open(_name, m, 0664, _value) };
     if (result == SEM_FAILED)
     {
-        throw i_op::error_msg{ errno };
+        throw i_op::error_msg{ errno, "i_op::named_semaphore<bool>::named_semaphore(char const*, unsigned int)", "sem_open(const char*, int, mode_t, unsigned int)" };
     }
     this->__sem_ptr = result;
     this->__name = _name;
@@ -330,12 +364,12 @@ i_op::named_semaphore<_cr_new>::~named_semaphore()
 }
 
 template<bool _cr_new>
-inline void i_op::named_semaphore<_cr_new>::unlink() noexcept(false)
+void i_op::named_semaphore<_cr_new>::unlink() noexcept(false)
 {
 #ifdef OS_LINUX
     if (sem_unlink(this->__name) != 0)
     {
-        throw i_op::error_msg{ errno };
+        throw i_op::error_msg{ errno, "i_op::named_semaphore<bool>::unlink()", "sem_unlink(const char*)" };
     }
 #endif
     this->__name = nullptr;
