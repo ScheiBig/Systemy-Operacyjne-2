@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/mnt/c/GitHub/Systemy-Operacyjne-2/build",
+  "command": "/usr/bin/g++-12 -O3 -DNDEBUG -pedantic -Wall -Werror -fmax-errors=16 -fdiagnostics-color=always -O3 -pthread -DOS_LINUX -std=gnu++17 -o CMakeFiles/SO2_L1_B.dir/L1_B.cpp.o -c /mnt/c/GitHub/Systemy-Operacyjne-2/L1_B.cpp",
+  "file": "/mnt/c/GitHub/Systemy-Operacyjne-2/L1_B.cpp"
+},
+{
+  "directory": "/mnt/c/GitHub/Systemy-Operacyjne-2/build",
+  "command": "/usr/bin/g++-12 -O3 -DNDEBUG -pedantic -Wall -Werror -fmax-errors=16 -fdiagnostics-color=always -O3 -pthread -DOS_LINUX -std=gnu++17 -o CMakeFiles/SO2_L1_A.dir/L1_A.cpp.o -c /mnt/c/GitHub/Systemy-Operacyjne-2/L1_A.cpp",
+  "file": "/mnt/c/GitHub/Systemy-Operacyjne-2/L1_A.cpp"
+}
+]

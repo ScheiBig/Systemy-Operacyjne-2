@@ -1,0 +1,12 @@
+[
+{
+  "directory": "C:/GitHub/Systemy-Operacyjne-2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -O3 -DNDEBUG -pedantic -Wall -Werror -fmax-errors=16 -fdiagnostics-color=always -O3 -DOS_WIN32 -std=gnu++17 -o CMakeFiles\\SO2_L1_A.dir\\L1_A.cpp.obj -c C:\\GitHub\\Systemy-Operacyjne-2\\L1_A.cpp",
+  "file": "C:\\GitHub\\Systemy-Operacyjne-2\\L1_A.cpp"
+},
+{
+  "directory": "C:/GitHub/Systemy-Operacyjne-2/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe -O3 -DNDEBUG -pedantic -Wall -Werror -fmax-errors=16 -fdiagnostics-color=always -O3 -DOS_WIN32 -std=gnu++17 -o CMakeFiles\\SO2_L1_B.dir\\L1_B.cpp.obj -c C:\\GitHub\\Systemy-Operacyjne-2\\L1_B.cpp",
+  "file": "C:\\GitHub\\Systemy-Operacyjne-2\\L1_B.cpp"
+}
+]
