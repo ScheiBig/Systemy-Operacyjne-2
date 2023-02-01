@@ -5,6 +5,7 @@
 /* error messages, based on those codes                                       */
 /* ========================================================================== */
 #pragma once
+#include "./macro.hpp"
 
 #include <iostream>
 
