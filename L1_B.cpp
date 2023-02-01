@@ -1,9 +1,12 @@
+#include "interoperability/macro.hpp"
+
 #include <iostream>
 #include <string>
 
 #include "interoperability/mutex.hpp"
 #include "interoperability/semaphore.hpp"
 #include "interoperability/process.hpp"
+#include "interoperability/thread.hpp"
 
 #include "util/ansi_text.hpp"
 
@@ -78,7 +81,7 @@ int main()
                     << ANSI::reset << util::nl;
                 abort_signal.release();
 
-                i_op::process::sleep(2_tu_s);
+                i_op::thread::sleep(2_tu_s);
                 continue;
             }
             else
@@ -88,13 +91,13 @@ int main()
                     << ANSI::reset << util::nl << "Terminate previous instance or try again with "
                     << ANSI::b_blue << "$env:SO2"
                     << ANSI::reset << " == "
-                    << ANSI::b_green << "\"NEW\""
+                    << ANSI::b_green << R"("NEW")"
                     << ANSI::reset << util::nl;
 #ifdef OS_WIN32
                 return ERROR_ALREADY_EXISTS;
 #endif
 #ifdef OS_LINUX
-                return 	EALREADY;
+                return EALREADY;
 #endif
             }
         }

@@ -1,3 +1,5 @@
+#include "interoperability/macro.hpp"
+
 #ifdef OS_WIN32
 #include <windows.h>
 #endif
@@ -10,6 +12,7 @@
 
 #include "interoperability/mutex.hpp"
 #include "interoperability/process.hpp"
+#include "interoperability/thread.hpp"
 #include "interoperability/timeunit.hpp"
 
 #include "util/ansi_text.hpp"
@@ -196,7 +199,7 @@ int main(int argc, char const* argv[])
             /* Sleeping for little time guarantees, that order of arguments is kept */
             /* during printing                                                      */
             /* ==================================================================== */
-            i_op::process::sleep(2_tu_ms * i);
+            i_op::thread::sleep(2_tu_ms * i);
             /* ================================================================= */
             /* In critical section, check if argument had been consumed already, */
             /* if not, then consume it and print to stdout                       */
