@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(SO2_L1_A CXX)
 project(SO2_L1_B CXX)
+project(SO2_L3 CXX)
 
 message("G++ compiler required!")
 add_compile_options(
@@ -38,12 +39,20 @@ add_executable(SO2_L1_B
     L1_B.cpp
 )
 
+add_executable(SO2_L3
+    L3.cpp
+)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(SO2_L1_A
         "pthread"
         "rt"
     )
     target_link_libraries(SO2_L1_B
+        "pthread"
+        "rt"
+    )
+    target_link_libraries(SO2_L3
         "pthread"
         "rt"
     )
