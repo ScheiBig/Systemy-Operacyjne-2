@@ -135,6 +135,9 @@ namespace util
 
         T* ptr() { return this->__ptr; }
         std::size_t len() { return this->__len; }
+
+        T* begin() { return this->__ptr; }
+        T* end() { return this->__ptr + this->__len; }
     };
 
     template<typename T>
